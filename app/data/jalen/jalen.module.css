@@ -1,0 +1,87 @@
+﻿.page {
+  min-height: calc(100vh - 61px);
+}
+
+.header {
+  padding: 52px 160px 28px;
+}
+
+.back {
+  display: inline-block;
+  font-family: var(--font-body), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  margin-bottom: 16px;
+  transition: color 0.15s ease;
+}
+
+.back::before {
+  content: '\2190  ';
+}
+
+.back:hover { color: var(--black); }
+
+.label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  margin-bottom: 10px;
+}
+
+.title {
+  font-family: var(--font-monument-regular), sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--black);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.window {
+  margin: 0 160px 80px;
+  border: 0.5px solid var(--grey-300);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.windowTitleBar {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--grey-100);
+  border-bottom: 0.5px solid var(--grey-300);
+}
+
+.windowTitle {
+  font-family: var(--font-body), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-500);
+}
+
+.windowBody {
+  background: #f5f0e8;
+  padding: 0 40px 40px;
+  overflow-x: auto;
+}
+
+@media (max-width: 1100px) {
+  .header { padding: 40px 32px 24px; }
+  .window { margin: 0 32px 64px; }
+}
+
+@media (max-width: 768px) {
+  .header { padding: 32px 20px 20px; }
+  .title { font-size: 22px; }
+  .window { margin: 0 16px 48px; }
+  .windowBody { padding: 0 16px 24px; }
+}
+
+@media (max-width: 480px) {
+  .header { padding: 24px 16px 16px; }
+  .window { margin: 0 12px 40px; }
+}

@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WORKOUT TRACKER</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #111111;
+    --border: #222;
+    --acid: #c8ff00;
+    --hot: #ff3c5a;
+    --ice: #00d4ff;
+    --muted: #555;
+    --text: #e8e8e8;
+    --dim: #888;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 2.5rem 1.5rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--acid);
+    text-shadow: 0 0 40px rgba(200,255,0,0.3);
+  }
+
+  .logo span { color: var(--text); }
+
+  .header-meta {
+    text-align: right;
+    font-size: 0.7rem;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.8;
+  }
+
+  .header-meta strong {
+    color: var(--text);
+    display: block;
+    font-size: 1rem;
+  }
+
+  main {
+    padding: 2rem 2.5rem;
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  /* TOP ROW - stat cards */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent, var(--acid));
+  }
+
+  .stat-card:nth-child(1) { --accent: var(--acid); animation-delay: 0.05s; }
+  .stat-card:nth-child(2) { --accent: var(--hot); animation-delay: 0.1s; }
+  .stat-card:nth-child(3) { --accent: var(--ice); animation-delay: 0.15s; }
+  .stat-card:nth-child(4) { --accent: #c084fc; animation-delay: 0.2s; }
+
+  .stat-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    line-height: 1;
+    color: var(--accent, var(--acid));
+  }
+
+  .stat-sub {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
+
+  /* VOLUME CHART */
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    animation: fadeUp 0.5s 0.25s ease both;
+  }
+
+  .card-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    height: 140px;
+    padding-bottom: 2rem;
+    position: relative;
+  }
+
+  .bar-chart::after {
+    content: '';
+    position: absolute;
+    bottom: 2rem; left: 0; right: 0;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    height: 100%;
+    justify-content: flex-end;
+    position: relative;
+  }
+
+  .bar-fill {
+    width: 100%;
+    background: var(--acid);
+    transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    min-height: 2px;
+    opacity: 0.85;
+  }
+
+  .bar-fill:hover { opacity: 1; filter: brightness(1.2); }
+
+  .bar-fill.is-highest { background: var(--acid); opacity: 1; }
+  .bar-fill.is-low { background: var(--muted); }
+
+  .bar-label {
+    position: absolute;
+    bottom: -1.8rem;
+    font-size: 0.55rem;
+    color: var(--dim);
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: 0.05em;
+  }
+
+  .bar-val {
+    position: absolute;
+    top: -1.4rem;
+    font-size: 0.6rem;
+    color: var(--acid);
+    white-space: nowrap;
+  }
+
+  /* TWO-COL */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  /* LIFT TABLE */
+  .lift-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+  }
+
+  .lift-table tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .lift-table tr:last-child { border-bottom: none; }
+
+  .lift-table td {
+    padding: 0.7rem 0;
+    vertical-align: middle;
+  }
+
+  .lift-table td:last-child {
+    text-align: right;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+  }
+
+  .lift-name { color: var(--text); }
+  .lift-count { color: var(--dim); font-size: 0.65rem; display: block; }
+
+  .lift-bar-bg {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 0.35rem;
+  }
+
+  .lift-bar-fill {
+    height: 100%;
+    background: var(--hot);
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  /* VIBE NOTES */
+  .notes-grid {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .note-item {
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--vibe-color, var(--dim));
+    padding: 0.6rem 0.8rem;
+    font-size: 0.7rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .note-date { color: var(--dim); white-space: nowrap; flex-shrink: 0; font-size: 0.6rem; }
+  .note-text { color: var(--text); line-height: 1.4; font-style: italic; }
+
+  /* HEATMAP ROW */
+  .heatmap-row {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .heat-cell {
+    width: 28px;
+    height: 28px;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5rem;
+    color: var(--dim);
+    position: relative;
+    cursor: default;
+    transition: transform 0.15s;
+  }
+
+  .heat-cell:hover { transform: scale(1.15); z-index: 10; }
+
+  .heat-cell.has-workout {
+    background: var(--acid);
+    color: #000;
+    font-weight: bold;
+  }
+
+  .heat-cell.is-big {
+    background: var(--hot);
+    color: #fff;
+  }
+
+  /* EXERCISE BREAKDOWN donut-style */
+  .muscle-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .muscle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.7rem;
+  }
+
+  .muscle-name { width: 120px; color: var(--dim); flex-shrink: 0; }
+
+  .muscle-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .muscle-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .muscle-pct { color: var(--text); font-size: 0.65rem; width: 35px; text-align: right; }
+
+  /* TOOLTIP */
+  .bar-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    border: 1px solid var(--acid);
+    color: var(--acid);
+    font-size: 0.6rem;
+    padding: 0.3rem 0.5rem;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 50;
+    letter-spacing: 0.05em;
+  }
+  .bar-group:hover .bar-tooltip { opacity: 1; }
+
+  /* FREQ DOT CHART */
+  .freq-chart {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+  .freq-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.6rem;
+    color: var(--dim);
+    letter-spacing: 0.04em;
+    position: relative;
+  }
+  .freq-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: default;
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+  .freq-dot:hover { transform: scale(1.12); }
+  .freq-dot.active { background: var(--acid); box-shadow: 0 0 8px rgba(200,255,0,0.45); }
+  .freq-day-tooltip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.58rem;
+    padding: 0.3rem 0.55rem;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 50;
+    letter-spacing: 0.05em;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .freq-day:hover .freq-day-tooltip { opacity: 1; }
+  .freq-legend {
+    font-size: 0.6rem;
+    color: var(--dim);
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+  }
+  .freq-legend span { display: flex; align-items: center; gap: 0.4rem; }
+  .dot-sample {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* QUOTE BLOCK */
+  .quote-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    text-align: center;
+    animation: fadeUp 0.5s 0.4s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quote-block::before {
+    content: '"';
+    position: absolute;
+    top: -1rem;
+    left: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 8rem;
+    color: var(--border);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .quote-text {
+    font-family: 'Space Mono', monospace;
+    font-weight: 400;
+    font-size: clamp(0.8rem, 1.8vw, 1.1rem);
+    color: var(--text);
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+  }
+
+  .quote-attr {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    main { padding: 1rem; }
+    header { padding: 1.25rem 1rem; flex-direction: column; align-items: flex-start; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-meta">
+    <strong>JAN — MAR 2026</strong>
+    14 sessions tracked<br>
+    data from hevy export
+  </div>
+</header>
+
+<main id="app">
+  <!-- JS will render everything -->
+</main>
+
+<script>
+const RAW = [
+  { date: "2026-03-24", title: "Day 1", duration: 50, exercises: [
+    { name: "Pull Up", sets: [{reps:3},{reps:4},{reps:4},{reps:4}] },
+    { name: "Squat (Barbell)", sets: [{w:55,r:5,type:'warmup'},{w:125,r:5},{w:125,r:5},{w:125,r:5},{w:125,r:5}] },
+    { name: "Romanian Deadlift (Barbell)", sets: [{w:125,r:8},{w:125,r:8},{w:125,r:8}] },
+    { name: "Overhead Press (Barbell)", sets: [{w:55,r:5,type:'warmup'},{w:65,r:5},{w:65,r:5}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:10,r:10},{w:7.5,r:10},{w:7.5,r:10}] },
+  ], notes: ["wtf why so hard\n148 bpm", "65 shoulder weird. maybe too wide.", "3 fast?/had to pause after 3rd rep"] },
+
+  { date: "2026-03-19", title: "Pre cardio small lift", duration: 21, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:4}] },
+    { name: "Lateral Raise (Dumbbell)", sets: [{w:20,r:10},{w:20,r:10}] },
+    { name: "Front Raise (Dumbbell)", sets: [{w:20,r:10},{w:20,r:10}] },
+    { name: "Arnold Press (Dumbbell)", sets: [{w:20,r:10},{w:20,r:8}] },
+    { name: "Zottman Curl (Dumbbell)", sets: [{w:25,r:10},{w:25,r:10},{w:25,r:10}] },
+  ], notes: [] },
+
+  { date: "2026-03-17", title: "Upper Body", duration: 81, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:4}] },
+    { name: "Overhead Press (Barbell)", sets: [{w:65,r:8,type:'warmup'},{w:70,r:5},{w:70,r:5}] },
+    { name: "Bench Press (Barbell)", sets: [{w:45,r:5,type:'warmup'},{w:95,r:5,type:'warmup'},{w:105,r:4},{w:105,r:3},{w:95,r:5}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:7.5,r:10},{w:7.5,r:10},{w:7.5,r:10}] },
+    { name: "Face Pull", sets: [{w:22.5,r:12},{w:22.5,r:12},{w:22.5,r:12}] },
+    { name: "Single Arm Landmine Press (Barbell)", sets: [{w:50,r:8,type:'warmup'},{w:60,r:6},{w:60,r:6},{w:60,r:6}] },
+    { name: "Bicep Curl (Dumbbell)", sets: [{w:20,r:20},{w:15,r:10},{w:20,r:15},{w:10,r:8}] },
+    { name: "Zottman Curl (Dumbbell)", sets: [{w:15,r:10,type:'warmup'},{w:15,r:10},{w:20,r:10}] },
+    { name: "Triceps Extension (Dumbbell)", sets: [{w:12.5,r:20,type:'warmup'},{w:20,r:11},{w:20,r:8},{w:20,r:10}] },
+  ], notes: ["heavy? why left hand hurt", "okay? easy?"] },
+
+  { date: "2026-03-15", title: "Day 1", duration: 79, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:3},{reps:5}] },
+    { name: "Squat (Barbell)", sets: [{w:45,r:5,type:'warmup'},{w:135,r:5},{w:135,r:5},{w:135,r:5}] },
+    { name: "Clean and Press", sets: [{w:65,r:5},{w:65,r:5},{w:75,r:5}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:10,r:10},{w:10,r:10},{w:10,r:10}] },
+    { name: "Bicep Curl (Cable)", sets: [{w:20,r:12},{w:20,r:12},{w:20,r:12}] },
+    { name: "Face Pull", sets: [{w:30,r:12},{w:40,r:12},{w:40,r:12}] },
+    { name: "Triceps Pushdown", sets: [{w:40,r:12},{w:50,r:12},{w:50,r:12}] },
+  ], notes: ["not heavy but slow (good)", "easy?"] },
+
+  { date: "2026-03-10", title: "Re-Sync Post Vacation", duration: 83, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:4},{reps:5}] },
+    { name: "Squat (Barbell)", sets: [{w:135,r:5},{w:135,r:5},{w:135,r:5}] },
+    { name: "Romanian Deadlift (Barbell)", sets: [{w:135,r:8},{w:135,r:8},{w:135,r:5}] },
+    { name: "Bench Press (Barbell)", sets: [{w:45,r:5,type:'warmup'},{w:95,r:5},{w:95,r:5},{w:95,r:5}] },
+    { name: "Seated Cable Row - V Grip (Cable)", sets: [{w:55,r:8},{w:55,r:6}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:7.5,r:8},{w:7.5,r:8},{w:7.5,r:8}] },
+    { name: "Lateral Raise (Dumbbell)", sets: [{w:15,r:10},{w:15,r:10},{w:15,r:10}] },
+    { name: "Arnold Press (Dumbbell)", sets: [{w:20,r:10},{w:20,r:10}] },
+    { name: "Zottman Curl (Dumbbell)", sets: [{w:15,r:10,type:'warmup'},{w:20,r:10},{w:20,r:10}] },
+  ], notes: ["is this 70%? am i lightheaded???", "IM EXHAUSTED"] },
+
+  { date: "2026-02-28", title: "Taipei workout", duration: 62, exercises: [
+    { name: "Pull Up", sets: [{reps:3},{reps:5},{reps:5}] },
+    { name: "Squat (Barbell)", sets: [{w:45,r:5,type:'warmup'},{w:135,r:5},{w:135,r:5},{w:135,r:5}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:10,r:10},{w:10,r:10},{w:10,r:10}] },
+    { name: "Lat Pulldown (Cable)", sets: [{w:90,r:8,type:'warmup'},{w:110,r:8},{w:110,r:6}] },
+    { name: "Triceps Rope Pushdown", sets: [{w:60,r:12},{w:70,r:12},{w:70,r:12}] },
+    { name: "Face Pull", sets: [{w:30,r:12},{w:30,r:12},{w:30,r:12}] },
+    { name: "Single Arm Curl (Cable)", sets: [{w:15,r:8},{w:20,r:10}] },
+  ], notes: ["fat ass bar/easy???"] },
+
+  { date: "2026-02-23", title: "Hotel workout", duration: 64, exercises: [
+    { name: "Bulgarian Split Squat", sets: [{w:20,r:10},{w:20,r:10},{w:20,r:10}] },
+    { name: "Single Leg Romanian Deadlift (Dumbbell)", sets: [{w:10,r:10},{w:10,r:10},{w:10,r:12}] },
+    { name: "Overhead Press (Dumbbell)", sets: [{w:20,r:14},{w:20,r:14},{w:20,r:14}] },
+    { name: "Bent Over Row (Dumbbell)", sets: [{w:20,r:18},{w:20,r:18},{w:20,r:18}] },
+    { name: "Lateral Raise (Dumbbell)", sets: [{w:15,r:10},{w:15,r:15},{w:15,r:15}] },
+    { name: "Triceps Extension (Dumbbell)", sets: [{w:10,r:20},{w:10,r:19}] },
+    { name: "Zottman Curl (Dumbbell)", sets: [{w:15,r:10,type:'warmup'},{w:20,r:10},{w:20,r:10}] },
+  ], notes: [] },
+
+  { date: "2026-02-12", title: "Pre Jog", duration: 45, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:5}] },
+    { name: "Front Squat", sets: [{w:45,r:5,type:'warmup'},{w:135,r:5},{w:135,r:5}] },
+    { name: "Bicep Curl (Dumbbell)", sets: [{w:25,r:14},{w:25,r:15},{w:25,r:10}] },
+    { name: "Hammer Curl (Dumbbell)", sets: [{w:25,r:14},{w:25,r:10},{w:25,r:10}] },
+    { name: "Zottman Curl (Dumbbell)", sets: [{w:20,r:10},{w:20,r:10}] },
+    { name: "Triceps Pushdown", sets: [{w:35,r:12,type:'warmup'},{w:40,r:12},{w:40,r:12}] },
+  ], notes: ["3x5 progression neutral grip cause right shoulder hurts\nlast set pullups no hurt"] },
+
+  { date: "2026-02-07", title: "Upper Body", duration: 88, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:5}] },
+    { name: "Overhead Press (Barbell)", sets: [{w:65,r:6,type:'warmup'},{w:75,r:5},{w:70,r:5}] },
+    { name: "Bench Press (Barbell)", sets: [{w:45,r:5,type:'warmup'},{w:95,r:5,type:'warmup'},{w:105,r:5},{w:105,r:6}] },
+    { name: "Seated Cable Row - V Grip (Cable)", sets: [{w:52.5,r:8},{w:55,r:8}] },
+    { name: "Seated Incline Curl (Dumbbell)", sets: [{w:25,r:15},{w:25,r:10},{w:25,r:10}] },
+    { name: "Concentration Curl", sets: [{w:12.5,r:10},{w:10,r:10},{w:10,r:10}] },
+    { name: "Zottman Curl (Dumbbell)", sets: [{w:15,r:10},{w:15,r:10}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:7.5,r:10},{w:7.5,r:10},{w:7.5,r:10}] },
+  ], notes: ["75 too heavy", "pinky on knurling - wider grip\nright shoulder kinda hurts"] },
+
+  { date: "2026-02-05", title: "PreJog", duration: 48, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:5},{reps:4}] },
+    { name: "Overhead Press (Barbell)", sets: [{w:65,r:6,type:'warmup'},{w:75,r:5},{w:75,r:5}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:5,r:20},{w:5,r:15},{w:5,r:15}] },
+    { name: "Single Arm Curl (Cable)", sets: [{w:17.5,r:6},{w:17.5,r:6},{w:17.5,r:6}] },
+  ], notes: ["pullup/neutral grip/pullup/chinup SLOW AF"] },
+
+  { date: "2026-02-03", title: "Day 1 - Lower Body", duration: 62, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:5},{reps:4},{reps:3}] },
+    { name: "Deadlift (Barbell)", sets: [{w:135,r:5,type:'warmup'},{w:225,r:3,type:'failure'},{w:185,r:5},{w:135,r:5}] },
+    { name: "Reverse Lunge (Barbell)", sets: [{w:65,r:8},{w:65,r:8},{w:65,r:8}] },
+    { name: "Clean and Press", sets: [{w:65,r:5},{w:75,r:5},{w:75,r:5}] },
+    { name: "Lateral Raise (Dumbbell)", sets: [{w:20,r:10},{w:20,r:10},{w:15,r:8}] },
+    { name: "Zottman Curl (Dumbbell)", sets: [{w:25,r:10},{w:25,r:10},{w:25,r:10}] },
+  ], notes: ["200 fucks up my lower back"] },
+
+  { date: "2026-01-30", title: "Upper body", duration: 108, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:4},{reps:5},{reps:4},{reps:4}] },
+    { name: "Bench Press (Barbell)", sets: [{w:45,r:8,type:'warmup'},{w:75,r:5,type:'warmup'},{w:95,r:5,type:'warmup'},{w:105,r:5},{w:105,r:5},{w:105,r:5}] },
+    { name: "Seated Cable Row - V Grip (Cable)", sets: [{w:50,r:8},{w:50,r:8},{w:50,r:8}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:5,r:18},{w:5,r:15},{w:2.5,r:16}] },
+    { name: "Seated Incline Curl (Dumbbell)", sets: [{w:25,r:14},{w:25,r:10},{w:20,r:10}] },
+    { name: "Cross Body Hammer Curl", sets: [{w:20,r:14},{w:20,r:16},{w:20,r:16}] },
+    { name: "Arnold Press (Dumbbell)", sets: [{w:10,r:14},{w:10,r:16},{w:10,r:10}] },
+    { name: "Triceps Extension (Dumbbell)", sets: [{w:20,r:14},{w:20,r:10},{w:20,r:10}] },
+    { name: "Single Arm Landmine Press (Barbell)", sets: [{w:55,r:6,type:'warmup'},{w:60,r:6},{w:60,r:6},{w:55,r:6}] },
+  ], notes: ["Easy?", "Right shoulder still kinda fucked up"] },
+
+  { date: "2026-01-29", title: "Pre-Jog", duration: 37, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:5},{reps:5},{reps:4}] },
+    { name: "Overhead Press (Barbell)", sets: [{w:65,r:8},{w:65,r:8}] },
+    { name: "Bent Over Row (Barbell)", sets: [{w:65,r:8,type:'warmup'},{w:85,r:8},{w:85,r:8}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:5,r:18},{w:5,r:18}] },
+    { name: "Zottman Curl (Dumbbell)", sets: [{w:25,r:16},{w:25,r:15}] },
+  ], notes: [] },
+
+  { date: "2026-01-27", title: "Day 1 - Lower Body", duration: 64, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:5},{reps:4},{reps:4}] },
+    { name: "Squat (Barbell)", sets: [{w:45,r:8,type:'warmup'},{w:135,r:5},{w:135,r:5},{w:135,r:5},{w:135,r:5},{w:135,r:5}] },
+    { name: "Romanian Deadlift (Barbell)", sets: [{w:135,r:8},{w:135,r:8},{w:135,r:8}] },
+    { name: "Lateral Raise (Dumbbell)", sets: [{w:15,r:10},{w:15,r:8},{w:15,r:8}] },
+    { name: "Front Raise (Dumbbell)", sets: [{w:15,r:10},{w:15,r:8},{w:15,r:8}] },
+    { name: "Preacher Curl (Dumbbell)", sets: [{w:20,r:10},{w:20,r:10},{w:20,r:10}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:2.5,r:16},{w:2.5,r:16},{w:2.5,r:16}] },
+  ], notes: ["Easy?? Not easy??"] },
+
+  { date: "2026-01-22", title: "Upper body", duration: 94, exercises: [
+    { name: "Pull Up", sets: [{reps:5},{reps:5},{reps:5},{reps:4},{reps:5}] },
+    { name: "Bench Press (Dumbbell)", sets: [{w:70,r:6},{w:70,r:8},{w:70,r:8}] },
+    { name: "Dumbbell Row", sets: [{w:35,r:8,type:'warmup'},{w:45,r:6},{w:45,r:6},{w:45,r:6}] },
+    { name: "Seated Incline Curl (Dumbbell)", sets: [{w:20,r:14},{w:20,r:12},{w:20,r:12}] },
+    { name: "Concentration Curl", sets: [{w:10,r:10},{w:10,r:10},{w:10,r:10}] },
+    { name: "Hammer Curl (Dumbbell)", sets: [{w:7.5,r:20,type:'warmup'},{w:10,r:20},{w:10,r:20},{w:10,r:20}] },
+    { name: "Single Arm Landmine Press (Barbell)", sets: [{w:55,r:6,type:'warmup'},{w:70,r:6},{w:60,r:6},{w:60,r:6}] },
+  ], notes: ["Close grip/Wide grip/Close Grip/Chin Up/Wide Grip AMRAP", "Right shoulder is dead"] },
+
+  { date: "2026-01-20", title: "Evening workout 🏋️", duration: 65, exercises: [
+    { name: "Front Squat", sets: [{w:115,r:5,type:'warmup'},{w:135,r:4},{w:135,r:4},{w:135,r:3}] },
+    { name: "Romanian Deadlift (Barbell)", sets: [{w:65,r:5,type:'warmup'},{w:135,r:5},{w:135,r:8},{w:135,r:8}] },
+    { name: "Reverse Lunge (Barbell)", sets: [{w:65,r:8},{w:65,r:8},{w:65,r:8}] },
+    { name: "Single Arm Lateral Raise (Cable)", sets: [{w:2.5,r:15},{w:2.5,r:15},{w:2.5,r:15}] },
+    { name: "Bicep Curl (Dumbbell)", sets: [{w:10,r:20},{w:10,r:20},{w:10,r:20}] },
+    { name: "Hammer Curl (Dumbbell)", sets: [{w:10,r:20},{w:10,r:20},{w:10,r:20}] },
+  ], notes: [] },
+];
+
+const BW = 145; // bodyweight lbs
+
+function calcVolume(session) {
+  let vol = 0;
+  session.exercises.forEach(ex => {
+    ex.sets.forEach(s => {
+      if (s.type === 'warmup') return;
+      const reps = s.r || s.reps || 0;
+      if (s.w) {
+        vol += s.w * reps;
+      } else if (reps > 0) {
+        // bodyweight exercise
+        vol += BW * reps;
+      }
+    });
+  });
+  return Math.round(vol);
+}
+
+function totalReps(session, exName) {
+  const ex = session.exercises.find(e => e.name === exName);
+  if (!ex) return 0;
+  return ex.sets.filter(s => s.type !== 'warmup').reduce((a, s) => a + (s.r || s.reps || 0), 0);
+}
+
+// Compute per-session data
+const sessions = RAW.map(s => ({
+  ...s,
+  volume: calcVolume(s),
+  pullupReps: totalReps(s, 'Pull Up'),
+  dateObj: new Date(s.date),
+  shortDate: new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+})).sort((a, b) => a.dateObj - b.dateObj);
+
+// Exercise frequency
+const exFreq = {};
+sessions.forEach(s => s.exercises.forEach(e => {
+  const base = e.name.replace(/ \(.*\)/, '').replace(/Single Arm /, '').replace(/ - V Grip/, '');
+  exFreq[base] = (exFreq[base] || 0) + e.sets.filter(s => s.type !== 'warmup').length;
+}));
+
+const topEx = Object.entries(exFreq).sort((a, b) => b[1] - a[1]).slice(0, 6);
+const maxExSets = topEx[0][1];
+
+// Muscle group mapping
+const muscleMap = {
+  'Shoulders': ['Lateral Raise', 'Front Raise', 'Overhead Press', 'Arnold Press', 'Landmine Press', 'Face Pull'],
+  'Back / Pull': ['Pull Up', 'Row', 'Lat Pulldown', 'Cable Row'],
+  'Legs': ['Squat', 'Deadlift', 'Lunge', 'Bulgarian', 'Front Squat', 'Romanian'],
+  'Chest': ['Bench Press', 'Dip'],
+  'Arms': ['Curl', 'Tricep', 'Pushdown', 'Extension'],
+};
+
+const muscleVol = {};
+Object.keys(muscleMap).forEach(m => muscleVol[m] = 0);
+
+sessions.forEach(s => s.exercises.forEach(e => {
+  for (const [muscle, keywords] of Object.entries(muscleMap)) {
+    if (keywords.some(k => e.name.includes(k))) {
+      muscleVol[muscle] += e.sets.filter(s => s.type !== 'warmup').reduce((a, s) => a + (s.r || s.reps || 0), 0);
+      break;
+    }
+  }
+}));
+
+const totalMuscleVol = Object.values(muscleVol).reduce((a, b) => a + b, 0);
+const muscleColors = {
+  'Shoulders': '#c8ff00',
+  'Back / Pull': '#00d4ff',
+  'Legs': '#ff3c5a',
+  'Chest': '#ff9500',
+  'Arms': '#c084fc',
+};
+
+// Weekly minutes — group sessions by ISO week
+function getISOWeek(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  return `${d.getFullYear()}-W${String(1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7)).padStart(2,'0')}`;
+}
+
+function weekLabel(isoWeek) {
+  const [year, wStr] = isoWeek.split('-W');
+  const w = parseInt(wStr);
+  const jan4 = new Date(parseInt(year), 0, 4);
+  const weekStart = new Date(jan4.getTime() + (w - 1) * 7 * 86400000 - ((jan4.getDay() + 6) % 7) * 86400000);
+  return weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+const weekMap = {};
+sessions.forEach(s => {
+  const wk = getISOWeek(s.dateObj);
+  weekMap[wk] = (weekMap[wk] || 0) + s.duration;
+});
+const weekEntries = Object.entries(weekMap).sort((a,b) => a[0].localeCompare(b[0]));
+const maxWeekMins = Math.max(...weekEntries.map(e => e[1]));
+
+// Fun facts — random on each load, third-person factual
+const totalVol = sessions.reduce((a, s) => a + s.volume, 0);
+const totalMins = sessions.reduce((a,s)=>a+s.duration,0);
+const totalPullupReps = sessions.reduce((a,s)=>a+s.pullupReps,0);
+const bestSession = sessions.reduce((a,s) => s.volume > a.volume ? s : a, sessions[0]);
+const spanDays = Math.round((sessions[sessions.length-1].dateObj - sessions[0].dateObj)/(1000*60*60*24));
+
+const funFacts = [
+  () => ({ text: `${totalVol.toLocaleString()} LBS OF TOTAL VOLUME. A DAIRY COW WEIGHS ABOUT 1,500 LBS. THAT'S ${(totalVol/1500).toFixed(0)} COWS.`, attr: 'source: usda average dairy cow weight' }),
+  () => ({ text: `${totalVol.toLocaleString()} LBS LIFTED ACROSS ${sessions.length} SESSIONS. THE AVERAGE CAR WEIGHS 4,094 LBS. THAT'S ${(totalVol/4094).toFixed(1)} CARS.`, attr: 'source: epa 2023 vehicle weight data' }),
+  () => ({ text: `${totalPullupReps} PULL-UP REPS LOGGED OVER ${sessions.length} SESSIONS. THAT'S AN AVERAGE OF ${(totalPullupReps/sessions.length).toFixed(1)} PER SESSION.`, attr: 'bodyweight counted at 145 lbs' }),
+  () => ({ text: `THE HEAVIEST SESSION WAS ${bestSession.shortDate} AT ${bestSession.volume.toLocaleString()} LBS. A MALE GRIZZLY BEAR AVERAGES ABOUT 600 LBS. THAT'S ${(bestSession.volume/600).toFixed(1)} GRIZZLIES.`, attr: 'source: national wildlife federation' }),
+  () => ({ text: `${totalMins} TOTAL MINUTES OF TRAINING OVER ${spanDays} DAYS. THAT'S ${((totalMins/spanDays)*100/60/24).toFixed(2)}% OF EACH DAY SPENT IN THE GYM.`, attr: 'calculated from session timestamps' }),
+  () => ({ text: `${sessions.length} SESSIONS LOGGED IN ${spanDays} DAYS. ONE SESSION EVERY ${(spanDays/sessions.length).toFixed(1)} DAYS ON AVERAGE.`, attr: 'jan 20 – mar 24, 2026' }),
+  () => ({ text: `${totalVol.toLocaleString()} LBS TOTAL VOLUME. A FULLY LOADED SCHOOL BUS WEIGHS ABOUT 28,000 LBS. THAT'S ${(totalVol/28000).toFixed(2)} SCHOOL BUSES.`, attr: 'source: federal transit administration' }),
+  () => ({ text: `${totalMins} MINUTES LOGGED. AN AVERAGE FEATURE FILM IS 90 MINUTES. THAT'S ${(totalMins/90).toFixed(1)} MOVIES WORTH OF TRAINING TIME.`, attr: 'source: statista avg film runtime 2023' }),
+];
+const fact = funFacts[Math.floor(Math.random() * funFacts.length)]();
+
+// Profanity censor
+function censorText(text) {
+  const map = {
+    'fucked up': 'f***ed up',
+    'fucked': 'f***ed',
+    'fucking': 'f***ing',
+    'fucks': 'f***s',
+    'fuck': 'f***',
+    'shit': 's***',
+    'ass': 'a**',
+    'wtf': 'w**',
+    'damn': 'd***',
+    'crap': 'c***',
+  };
+  let out = text;
+  for (const [word, repl] of Object.entries(map)) {
+    out = out.replace(new RegExp(`\\b${word}\\b`, 'gi'), repl);
+  }
+  return out;
+}
+
+// Fun notes (non-empty, filtered + censored)
+const BORING = ['ok', '', 'easy?'];
+const funNotes = [];
+sessions.forEach(s => {
+  s.notes.forEach(n => {
+    const clean = censorText(n.replace(/\\n/g, ' ').replace(/\n/g, ' ').trim());
+    if (clean && !BORING.includes(clean.toLowerCase()) && clean.length > 5) {
+      funNotes.push({ date: s.shortDate, text: clean });
+    }
+  });
+});
+
+// Vibe color for notes
+function vibeColor(text) {
+  const t = text.toLowerCase();
+  if (t.includes('hurt') || t.includes('dead') || t.includes('shoulder') || t.includes('back')) return '#ff3c5a';
+  if (t.includes('easy') || t.includes('good') || t.includes('clean')) return '#c8ff00';
+  if (t.includes('exhaust') || t.includes('heavy') || t.includes('hard') || t.includes('wtf') || t.includes('fuck')) return '#ff9500';
+  return '#00d4ff';
+}
+
+// Stats
+const totalPullups = totalPullupReps;
+const avgDuration = Math.round(sessions.reduce((a, s) => a + s.duration, 0) / sessions.length);
+const maxVol = Math.max(...sessions.map(s => s.volume));
+
+// Lift progression — top working weight per session for Bench, OHP, Squat
+const LIFTS = [
+  { key: 'bench',  label: 'Bench Press',     color: '#ff3c5a', match: s => s.exercises.find(e => e.name.includes('Bench Press') && !e.name.includes('Dumbbell')) },
+  { key: 'ohp',    label: 'Overhead Press',  color: '#00d4ff', match: s => s.exercises.find(e => e.name.includes('Overhead Press') && !e.name.includes('Dumbbell')) },
+  { key: 'squat',  label: 'Squat',           color: '#c8ff00', match: s => s.exercises.find(e => e.name.includes('Squat') && !e.name.includes('Front') && !e.name.includes('Bulgarian')) },
+];
+
+const liftSeries = LIFTS.map(lift => {
+  const points = sessions.map(s => {
+    const ex = lift.match(s);
+    if (!ex) return null;
+    const topSet = ex.sets.filter(st => st.type !== 'warmup' && st.w).reduce((a, st) => st.w > (a?.w || 0) ? st : a, null);
+    return topSet ? { date: s.shortDate, w: topSet.w, dateObj: s.dateObj } : null;
+  }).filter(Boolean);
+  return { ...lift, points };
+});
+
+// Render
+const app = document.getElementById('app');
+
+app.innerHTML = `
+  <!-- STAT CARDS -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Volume Lifted</div>
+      <div class="stat-value" style="color:var(--acid)">${(totalVol/1000).toFixed(0)}K</div>
+      <div class="stat-sub">lbs · incl. bodyweight @ 145</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sessions Logged</div>
+      <div class="stat-value" style="color:var(--hot)">${sessions.length}</div>
+      <div class="stat-sub">Jan 20 → Mar 24, 2026</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pull-ups Completed</div>
+      <div class="stat-value" style="color:var(--ice)">${totalPullups}</div>
+      <div class="stat-sub">reps total · every session</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Session Length</div>
+      <div class="stat-value" style="color:#c084fc">${avgDuration}<span style="font-size:1.2rem">min</span></div>
+      <div class="stat-sub">longest: ${Math.max(...sessions.map(s=>s.duration))} min</div>
+    </div>
+  </div>
+
+  <!-- VOLUME CHART -->
+  <div class="chart-card">
+    <div class="card-title">Session Volume (lbs) — hover for total</div>
+    <div class="bar-chart" id="volChart"></div>
+  </div>
+
+  <!-- PULL-UP REPS LINE CHART -->
+  <div class="chart-card">
+    <div class="card-title">Pull-up Reps per Session — working sets only</div>
+    <svg id="pullupChart" width="100%" style="display:block;overflow:visible"></svg>
+  </div>
+
+  <!-- TWO COL -->
+  <div class="two-col">
+
+    <!-- TOP EXERCISES -->
+    <div class="chart-card" style="animation-delay:0.3s">
+      <div class="card-title">Most-Trained Exercises</div>
+      <table class="lift-table">
+        ${topEx.map(([name, count]) => `
+          <tr>
+            <td>
+              <span class="lift-name">${name}</span>
+              <span class="lift-count">${count} working sets</span>
+              <div class="lift-bar-bg">
+                <div class="lift-bar-fill" style="width:${(count/maxExSets*100).toFixed(0)}%"></div>
+              </div>
+            </td>
+            <td style="color:var(--hot)">${count}</td>
+          </tr>
+        `).join('')}
+      </table>
+    </div>
+
+    <!-- MUSCLE MAP + FREQUENCY -->
+    <div class="chart-card" style="animation-delay:0.35s;display:flex;flex-direction:column">
+      <div class="card-title">Rep Share by Muscle Group</div>
+      <div class="muscle-pills">
+        ${Object.entries(muscleVol).sort((a,b)=>b[1]-a[1]).map(([m, v]) => {
+          const pct = (v / totalMuscleVol * 100).toFixed(0);
+          return `
+            <div class="muscle-row">
+              <div class="muscle-name">${m}</div>
+              <div class="muscle-track">
+                <div class="muscle-fill" style="width:${pct}%;background:${muscleColors[m]}"></div>
+              </div>
+              <div class="muscle-pct">${pct}%</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div style="flex:1"></div>
+      <div class="card-title" style="margin-top:1.25rem">Minutes Worked Out per Week</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        ${weekEntries.map(([wk, mins]) => `
+          <div style="display:flex;align-items:center;gap:0.65rem;font-size:0.62rem">
+            <div style="width:52px;color:var(--dim);flex-shrink:0;text-align:right">${weekLabel(wk)}</div>
+            <div style="flex:1;height:10px;background:var(--border);border-radius:2px;overflow:hidden">
+              <div style="height:100%;width:${(mins/maxWeekMins*100).toFixed(1)}%;background:var(--acid);border-radius:2px;transition:width 1s ease"></div>
+            </div>
+            <div style="width:36px;color:var(--text);text-align:right">${mins}m</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="freq-legend" style="justify-content:flex-start;margin-top:0.75rem">
+        <span style="color:var(--dim);font-size:0.6rem">total training minutes per calendar week</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RANDOM FUN FACT -->
+  <div class="quote-block">
+    <div class="quote-text">${fact.text}</div>
+    <div class="quote-attr">${fact.attr}</div>
+  </div>
+`;
+
+// Render bar chart
+const maxV = Math.max(...sessions.map(s => s.volume));
+const chart = document.getElementById('volChart');
+const firstDate = sessions[0].dateObj;
+chart.innerHTML = sessions.map((s, i) => {
+  const h = s.volume === 0 ? 4 : Math.max(8, (s.volume / maxV) * 108);
+  const isHighest = s.volume === maxV;
+  const isLow = s.volume < 1000;
+  const cls = isHighest ? 'is-highest' : isLow ? 'is-low' : '';
+  const relDay = Math.round((s.dateObj - firstDate) / (1000 * 60 * 60 * 24)) + 1;
+  return `
+    <div class="bar-group" data-idx="${i}" style="cursor:pointer">
+      <div class="bar-tooltip">${s.volume.toLocaleString()} lbs<br><span style="color:var(--dim);font-size:0.5rem">${s.shortDate}</span></div>
+      <div class="bar-fill ${cls}" style="height:${h}px">
+        ${isHighest ? `<div class="bar-val">PEAK</div>` : ''}
+      </div>
+      <div class="bar-label">D${relDay}</div>
+    </div>
+  `;
+}).join('');
+
+// Pull-up reps SVG line chart
+(function() {
+  const svg = document.getElementById('pullupChart');
+  const W = svg.parentElement.clientWidth - 32;
+  const H = 160;
+  const PAD = { top: 20, right: 16, bottom: 28, left: 36 };
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('height', H);
+
+  // One point per session — total working pull-up reps
+  const points = sessions.map(s => ({ date: s.shortDate, reps: s.pullupReps }));
+  const n = points.length;
+  const xScale = i => PAD.left + (i / (n - 1)) * (W - PAD.left - PAD.right);
+  const allReps = points.map(p => p.reps);
+  const minR = Math.max(0, Math.min(...allReps) - 2);
+  const maxR = Math.max(...allReps) + 2;
+  const yScale = r => PAD.top + (1 - (r - minR) / (maxR - minR)) * (H - PAD.top - PAD.bottom);
+
+  let html = '';
+
+  // Grid + Y labels
+  const yTicks = [minR, Math.round((minR + maxR) / 2), maxR].map(v => Math.round(v));
+  [...new Set(yTicks)].forEach(val => {
+    const y = yScale(val);
+    html += `<line x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}" stroke="#1e1e1e" stroke-width="1"/>`;
+    html += `<text x="${PAD.left - 6}" y="${y + 4}" fill="#444" font-size="9" text-anchor="end" font-family="Space Mono,monospace">${val}</text>`;
+  });
+
+  // X labels
+  points.forEach((p, i) => {
+    html += `<text x="${xScale(i)}" y="${H - 4}" fill="#444" font-size="8" text-anchor="middle" font-family="Space Mono,monospace">${p.date}</text>`;
+  });
+
+  // Area fill under line
+  const linePts = points.map((p, i) => `${xScale(i)},${yScale(p.reps)}`).join(' ');
+  const baseline = yScale(minR);
+  const areaD = `M ${xScale(0)},${baseline} L ${points.map((p,i) => `${xScale(i)},${yScale(p.reps)}`).join(' L ')} L ${xScale(n-1)},${baseline} Z`;
+  html += `<path d="${areaD}" fill="#00d4ff" opacity="0.06"/>`;
+
+  // Line
+  const lineD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xScale(i)} ${yScale(p.reps)}`).join(' ');
+  html += `<path d="${lineD}" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+
+  // Dots + tooltips
+  points.forEach((p, i) => {
+    const x = xScale(i), y = yScale(p.reps);
+    const isHigh = p.reps === Math.max(...allReps);
+    const isLow = p.reps === Math.min(...allReps);
+    const dotColor = isHigh ? '#c8ff00' : isLow ? '#ff3c5a' : '#00d4ff';
+    const tipX = Math.min(Math.max(x, PAD.left + 30), W - PAD.right - 30);
+    html += `
+      <g class="pu-dot-group" style="cursor:default">
+        <circle cx="${x}" cy="${y}" r="${isHigh || isLow ? 4.5 : 3.5}" fill="${dotColor}" stroke="#111" stroke-width="1.5"/>
+        <circle cx="${x}" cy="${y}" r="12" fill="transparent"/>
+        <g class="pu-dot-tip" style="pointer-events:none;opacity:0;transition:opacity 0.15s">
+          <rect x="${tipX - 24}" y="${y - 28}" width="48" height="18" rx="2" fill="#1a1a1a" stroke="#333"/>
+          <text x="${tipX}" y="${y - 15}" fill="${dotColor}" font-size="9" text-anchor="middle" font-family="Space Mono,monospace">${p.reps} reps</text>
+        </g>
+      </g>`;
+  });
+
+  svg.innerHTML = html;
+
+  svg.querySelectorAll('.pu-dot-group').forEach(g => {
+    const tip = g.querySelector('.pu-dot-tip');
+    g.addEventListener('mouseenter', () => tip.style.opacity = '1');
+    g.addEventListener('mouseleave', () => tip.style.opacity = '0');
+  });
+})();
+const modalOverlay = document.createElement('div');
+modalOverlay.id = 'modal-overlay';
+modalOverlay.style.cssText = `
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78);
+  z-index:2000; align-items:center; justify-content:center; padding:1.5rem;
+`;
+modalOverlay.innerHTML = `
+  <div id="modal-box" style="
+    background:#111; border:1px solid #2a2a2a; max-width:500px; width:100%;
+    max-height:78vh; overflow-y:auto; padding:1.5rem 1.75rem; position:relative;
+    font-family:'Space Mono',monospace;
+  ">
+    <button id="modal-close" style="
+      position:absolute; top:1rem; right:1rem; background:none; border:none;
+      color:#555; font-size:1rem; cursor:pointer; font-family:inherit; line-height:1;
+      transition: color 0.15s;
+    " onmouseover="this.style.color='#e8e8e8'" onmouseout="this.style.color='#555'">✕</button>
+    <div id="modal-content"></div>
+  </div>
+`;
+document.body.appendChild(modalOverlay);
+
+function openModal(idx) {
+  const s = sessions[idx];
+  const workingSets = s.exercises.map(ex => {
+    const sets = ex.sets.filter(st => st.type !== 'warmup');
+    if (!sets.length) return null;
+    const rows = sets.map((st, i) => {
+      const reps = st.r || st.reps || 0;
+      const weight = st.w ? `${st.w} lbs` : `BW`;
+      const vol = st.w ? st.w * reps : 145 * reps;
+      const isFail = st.type === 'failure';
+      return `<tr>
+        <td style="color:#444;padding:0.3rem 0.75rem 0.3rem 0;font-size:0.62rem;white-space:nowrap">Set ${i+1}${isFail ? ' <span style="color:#ff3c5a">FAIL</span>' : ''}</td>
+        <td style="color:#e8e8e8;padding:0.3rem 0.75rem;font-size:0.7rem">${weight} × ${reps}</td>
+        <td style="color:#444;padding:0.3rem 0 0.3rem 0.75rem;font-size:0.62rem;text-align:right;white-space:nowrap">${vol.toLocaleString()} lbs</td>
+      </tr>`;
+    }).join('');
+    const exVol = sets.reduce((a, st) => {
+      const r = st.r || st.reps || 0;
+      return a + (st.w ? st.w * r : 145 * r);
+    }, 0);
+    return `
+      <div style="margin-bottom:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.35rem">
+          <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:#666">${ex.name}</div>
+          <div style="font-size:0.6rem;color:#444">${exVol.toLocaleString()} lbs</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse">${rows}</table>
+        <div style="height:1px;background:#1a1a1a;margin-top:0.6rem"></div>
+      </div>`;
+  }).filter(Boolean).join('');
+
+  document.getElementById('modal-content').innerHTML = `
+    <div style="margin-bottom:1.25rem;padding-bottom:0.9rem;border-bottom:1px solid #1e1e1e">
+      <div style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.15em;color:#444;margin-bottom:0.3rem">${s.shortDate} · ${s.duration} min</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#c8ff00;letter-spacing:0.01em;line-height:1.1">${s.title}</div>
+      <div style="font-size:0.65rem;color:#555;margin-top:0.3rem">${s.volume.toLocaleString()} lbs total volume</div>
+    </div>
+    ${workingSets}
+  `;
+  modalOverlay.style.display = 'flex';
+}
+
+document.querySelectorAll('.bar-group').forEach(el => {
+  el.addEventListener('click', () => openModal(+el.dataset.idx));
+});
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) modalOverlay.style.display = 'none'; });
+document.getElementById('modal-close').addEventListener('click', () => modalOverlay.style.display = 'none');
+document.addEventListener('keydown', e => { if (e.key === 'Escape') modalOverlay.style.display = 'none'; });
+</script>
+</body>
+</html>

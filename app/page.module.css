@@ -1,0 +1,103 @@
+﻿.page { min-height: calc(100vh - 61px); }
+
+.subNav {
+  display: flex;
+  gap: 28px;
+  padding: 20px 160px;
+  border-bottom: 0.5px solid var(--grey-200);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.subNav::-webkit-scrollbar { display: none; }
+
+.subNavLink {
+  font-family: var(--font-monument-regular), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  background: none;
+  border: none;
+  padding-bottom: 2px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.subNavLink:hover { color: var(--grey-600); }
+.subNavActive { color: var(--black); }
+
+.grid {
+  padding: 24px 160px 0;
+  columns: 3;
+  column-gap: 8px;
+}
+
+.gridTight { columns: 4; }
+
+.card {
+  break-inside: avoid;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: flex-end;
+  padding: 14px;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.overlayText {
+  font-size: 10px;
+  color: #fff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-body), sans-serif;
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--grey-400);
+  padding: 48px 0;
+}
+
+.footer {
+  padding: 48px 160px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-300);
+}
+
+@media (max-width: 1100px) {
+  .grid { columns: 3; padding: 16px 32px 0; }
+  .gridTight { columns: 3; }
+  .subNav { padding: 16px 32px; }
+  .footer { padding: 32px 32px; }
+}
+
+@media (max-width: 768px) {
+  .grid { columns: 2; padding: 12px 16px 0; }
+  .gridTight { columns: 2; }
+  .subNav { padding: 14px 16px; gap: 20px; }
+  .footer { padding: 28px 16px; }
+}
+
+@media (max-width: 480px) {
+  .grid { columns: 1; padding: 10px 12px 0; }
+  .gridTight { columns: 2; }
+  .subNav { padding: 12px 12px; }
+  .footer { padding: 24px 12px; }
+}

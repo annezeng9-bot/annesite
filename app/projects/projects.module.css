@@ -1,0 +1,60 @@
+.page { min-height: calc(100vh - 61px); }
+
+.hero { padding: 52px 72px 28px; }
+
+.label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  margin-bottom: 10px;
+}
+
+.title {
+  font-family: var(--font-monument-regular), sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--black);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.grid {
+  padding: 8px 72px 64px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border: 0.5px solid var(--grey-200);
+  border-radius: 4px;
+  padding: 24px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  text-decoration: none;
+}
+
+.card:hover { border-color: var(--grey-400); }
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-400); }
+.year { font-size: 11px; color: var(--grey-300); }
+.cardTitle { font-size: 15px; font-weight: 500; color: var(--black); margin-bottom: 10px; }
+.cardDesc { font-size: 13px; color: var(--grey-500); line-height: 1.7; flex: 1; }
+
+.arrow { font-size: 14px; color: var(--grey-300); margin-top: 20px; transition: color 0.15s ease; }
+.card:hover .arrow { color: var(--black); }
+
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; padding: 8px 32px 48px; }
+  .hero { padding: 40px 32px 24px; }
+}

@@ -1,0 +1,125 @@
+.page {
+  min-height: calc(100vh - 61px);
+  padding-bottom: 64px;
+}
+
+.section { padding: 40px 160px 0; }
+
+.label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  margin-bottom: 16px;
+}
+
+.divider {
+  border: none;
+  border-top: 0.5px solid var(--grey-200);
+  margin: 40px 160px 0;
+}
+
+.gifGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  max-width: 900px;
+}
+
+.gifCard { display: flex; flex-direction: column; gap: 8px; }
+
+.gifWrap {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--grey-100);
+}
+
+.gif {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.videoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  max-width: 900px;
+}
+
+.videoCard { display: flex; flex-direction: column; gap: 8px; }
+
+.videoWrap {
+  width: 100%;
+  border-radius: 45px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.overlay:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.playText {
+  font-family: var(--font-body), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.videoTitle {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  font-family: var(--font-body), sans-serif;
+  line-height: 1.8;
+}
+
+.videoSubtitle {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--grey-300);
+  font-family: var(--font-body), sans-serif;
+}
+
+@media (max-width: 1100px) {
+  .section { padding: 32px 32px 0; }
+  .divider { margin: 32px 32px 0; }
+}
+
+@media (max-width: 768px) {
+  .section { padding: 28px 20px 0; }
+  .divider { margin: 28px 20px 0; }
+  .gifGrid { grid-template-columns: 1fr; max-width: 100%; }
+  .videoGrid { grid-template-columns: 1fr; max-width: 100%; }
+  .videoWrap { border-radius: 24px; }
+}
+
+@media (max-width: 480px) {
+  .section { padding: 20px 16px 0; }
+  .divider { margin: 20px 16px 0; }
+  .videoWrap { border-radius: 16px; }
+}

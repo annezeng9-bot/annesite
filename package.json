@@ -1,0 +1,29 @@
+{
+  "name": "my-portfolio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@portabletext/react": "^6.0.3",
+    "@sanity/image-url": "^2.0.3",
+    "@sanity/vision": "^5.18.0",
+    "next": "16.2.1",
+    "next-sanity": "^12.1.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sanity-plugin-media": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.1",
+    "typescript": "^5"
+  }
+}
