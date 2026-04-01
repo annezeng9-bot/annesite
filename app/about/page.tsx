@@ -63,7 +63,7 @@ export default function AboutPage() {
           <p className={styles.body}>
             I build systems that organize and visualize information. I also take lots of photos!
             My work ranges from architecting data dashboards to producing live broadcast assets
-            to high-speed sports photography.
+            to capturing high-speed sports photography.
           </p>
 
           <div className={styles.divider} />
@@ -78,7 +78,7 @@ export default function AboutPage() {
           </div>
 
           <a href="/collection" className={styles.collectionLink}>
-            Check out my card collection
+            Check out my card collection!
           </a>
         </div>
 

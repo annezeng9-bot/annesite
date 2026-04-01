@@ -1,6 +1,9 @@
 ﻿import { createClient } from 'next-sanity';
 import imageUrlBuilder from '@sanity/image-url';
 
+// local type for TypeScript
+type SanityImageSource = string | Record<string, any>;
+
 export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
@@ -9,7 +12,10 @@ export const client = createClient({
 });
 
 const builder = imageUrlBuilder(client);
-export function urlFor(source) { return builder.image(source); }
+
+export function urlFor(source: SanityImageSource) {
+  return builder.image(source);
+}
 
 export async function getPhotos() {
   return client.fetch('*[_type == "photo" && featured != false] | order(order asc) { _id, title, image, location, year, category, tall, featured, order }');
